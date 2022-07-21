@@ -1,0 +1,37 @@
+-- ethereum account 생성
+https://vanity-eth.tk/
+
+-- 주소에서 genesis 파일 복사
+https://besu.hyperledger.org/en/stable/Tutorials/Private-Network/Create-IBFT-Network/
+
+
+node1
+address: 0x2941F305FA0263758449Cd541e4aa1b5F54a309e
+private_key: 13762785b5410dd75b540a313ad3f7d25c3fe99d1aed6e21ac1a09655375175e
+
+node2
+address: 0x3Fc35814481F7708F2a4c1aCe331Be0F2Eae550a
+private_key: 81fddde495717b959f8a1a922a86bf66267896737fad71aea48d6f38826c6b70
+
+node3
+address: 0x9Eff2E4f87eaAC27b446F9FA6d22c8031C8076e1
+private_key: e84e1b26c9bd988b1fd4dbf8ffb7cfda031c350351a4c74f288a264bf1cbd204
+
+node4
+address: 0xe0bC3a5e976AC8CEd3a4B208954b08F4Cf2Cbc51
+private_key: d8c964cd27e37a7e1ecf34e874d9db56fa6d02a7e9fee30e86f0b646cad8ad5b
+
+
+-- genesis 파일을 활용하여 besu 기동 --> networkFiles라는 폴더가 생긴다.
+besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key
+
+-- node1로 들어가서 아래 명령어 실행
+besu --data-path=data --genesis-file=../genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all"
+-- node1 enode
+enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303
+
+-- node2, 3, 4로 들어가서 아래 명령어 실행
+besu --data-path=data --
+besu --data-path=data --genesis-file=../genesis.json --bootnodes=enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303 --p2p-port=30304 --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --rpc-http-port=8546
+besu --data-path=data --genesis-file=../genesis.json --bootnodes=enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303 --p2p-port=30305 --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --rpc-http-port=8547
+besu --data-path=data --genesis-file=../genesis.json --bootnodes=enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303 --p2p-port=30306 --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --rpc-http-port=8548

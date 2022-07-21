@@ -1,0 +1,91 @@
+==============================================================================
+========================= besu_network setup start ===========================
+==============================================================================
+1 -- ethereum account 생성 (4개 생성한다 --> besu ibft consensus network를 구동할 node 4개 만들기위함)
+https://vanity-eth.tk/
+
+2 -- 주소에서 genesis (ibftConfigFile.json) 파일 복사후 최상위 폴더에 넣는다.
+https://besu.hyperledger.org/en/stable/Tutorials/Private-Network/Create-IBFT-Network/
+
+3 -- 각 구동할 node의 하위 data 폴더에 처음 생성한 ethereum account 4개의 key, key.pub을 넣는다.
+besu_network/
+├── node1
+│   ├── data
+├── node2
+│   ├── data
+├── node3
+│   ├── data
+└── node4
+│   ├── data
+└── ibftConfigFile.json
+node1
+address: 0x2941F305FA0263758449Cd541e4aa1b5F54a309e
+private_key: 13762785b5410dd75b540a313ad3f7d25c3fe99d1aed6e21ac1a09655375175e
+
+node2
+address: 0x3Fc35814481F7708F2a4c1aCe331Be0F2Eae550a
+private_key: 81fddde495717b959f8a1a922a86bf66267896737fad71aea48d6f38826c6b70
+
+node3
+address: 0x9Eff2E4f87eaAC27b446F9FA6d22c8031C8076e1
+private_key: e84e1b26c9bd988b1fd4dbf8ffb7cfda031c350351a4c74f288a264bf1cbd204
+
+node4
+address: 0xe0bC3a5e976AC8CEd3a4B208954b08F4Cf2Cbc51
+private_key: d8c964cd27e37a7e1ecf34e874d9db56fa6d02a7e9fee30e86f0b646cad8ad5b
+
+4 -- genesis 파일(ibftConfigFile.json)을 활용하여 besu 초기 셋압 --> networkFiles라는 폴더가 생긴다.
+besu operator generate-blockchain-config --config-file=ibftConfigFile.json --to=networkFiles --private-key-file-name=key
+
+5 -- node1로 들어가서 아래 명령어 실행
+besu --data-path=data --genesis-file=../genesis.json --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all"
+
+6 -- node1이 실행되면 log에서 enode 값을 복사하여 아래와 같이 따로 저장해놓는다.
+-- node1 enode
+enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303
+
+7 -- node2, 3, 4 폴더로 들어가서 아래 명령어를 입력하여 node를 실행한다.
+besu --data-path=data --genesis-file=../genesis.json --bootnodes=enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303 --p2p-port=30304 --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --rpc-http-port=8546
+besu --data-path=data --genesis-file=../genesis.json --bootnodes=enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303 --p2p-port=30305 --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --rpc-http-port=8547
+besu --data-path=data --genesis-file=../genesis.json --bootnodes=enode://49ec4b89461c9c08b1fbffac0fbcda6b3d246927fc7b531eff0f8d0f4e0e86e5bb0ffe5a39e82f52559fa4284c84684ba58a48e05a43a5b8da392039bbd6b821@127.0.0.1:30303 --p2p-port=30306 --rpc-http-enabled --rpc-http-api=ETH,NET,IBFT --host-allowlist="*" --rpc-http-cors-origins="all" --rpc-http-port=8548
+==============================================================================
+========================= besu_network setup end =============================
+==============================================================================
+
+
+==============================================================================
+======================== Smart Contract Setup Start ==========================
+==============================================================================
+1. https://remix.ethereum.org/ 으로 접속하여 폴더 (smartContract_erc20)에 있는 내용을 컴파일한다.
+2. besu_network의 node 4개를 start 시키고, Metamask에 network (ex. besu_private_test)를 추가한다.
+3. 네트워크 (ex. besu_private_test)에서 계정 가져오기를 통해 4개 생성한다. (위의 private_key 필요)
+4. remix에서 DEPLOY & RUN TRANSACTIONS 메뉴로 이동한다.
+& ENVIRONMENT를 Injected Provider - Metamask로 선택한다.
+& ACCOOUNT는 Metamask에서 선택되어있는 지갑 Account와 동일한 것으로 자동 선택된다.
+& Contract를 ERC20으로 선택하고, DEPLOY에 데이터 (NAME_, SYMBOL_, MINT_)를 입력하고, Deploy 버튼을 누른다.
+& Deployed Contracts에 생긴 Contract의 Address를 복사하여 따로 저장해둔다. --> wallet_bapp 구현시 필요
+& transfer TRANSACTIONS을 선택하여 to, amount를 입력하여 Contract 생성시 생성한 토큰을 받을사람(to)에게 전송할 수 있다.
+& 받을사람(to)은 Metamask에서 받을 계좌로 이동하여 하단에 토큰 가져오기 링크를 클릭하여 저장한 contract address와 기타 정보를 넣어 토큰을 받아온다.
+& 이러한 과정 besu IBFT private network에서 토큰 발행 및 전송을 테스트해볼 수 있다.
+==============================================================================
+======================== Smart Contract Setup End ============================
+==============================================================================
+
+==============================================================================
+========================= wallet_bapp Setup Start ============================
+==============================================================================
+1. nodejs 설치
+2. package.json을 입력 후, 해당 폴더에서 npm install 한다. --> node_modules 생성
+3. server.js 소스코드상 변경해야하는 부분
+- var web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545')); //besu 접속
+- const address = '2941F305FA0263758449Cd541e4aa1b5F54a309e' // 1번 노드 address
+- const priv_key = Buffer.from('13762785b5410dd75b540a313ad3f7d25c3fe99d1aed6e21ac1a09655375175e', 'hex'); // 1번 노드 pk
+4. node server.js로 start
+5. 127.0.0.1/deploy 경로를 통하여 데이터 (NAME_, SYMBOL_, MINT_)를 입력하고 token을 발행한다.
+6. 발행 후 contract_address 정보를 복사하여 소스를 수정한다.
+var contract_address = "0xA8b7A7f34D376A94839af3C9d59E62DBE467009A";
+7. 127.0.0.1/send 경로를 통하여 전달하고자 하는 account로 토큰을 전달한다.
+8. 127.0.0.1/balance 경로를 통하여 account의 잔고를 조회한다.
+==============================================================================
+========================= wallet_bapp Setup End ==============================
+==============================================================================
